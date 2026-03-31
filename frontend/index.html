@@ -14,9 +14,8 @@
         body {
             background-color: var(--twitch-dark);
             color: var(--twitch-text);
-            font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Inter', sans-serif;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
@@ -29,13 +28,11 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.7);
             border: 1px solid rgba(145, 70, 255, 0.3);
             width: 90%;
-            max-width: 420px;
+            max-width: 400px;
             text-align: center;
         }
-        h1 { color: white; margin-bottom: 0.2rem; font-size: 1.8rem; letter-spacing: -1px; }
+        h1 { color: white; margin-bottom: 0.5rem; }
         .accent { color: var(--twitch-purple); }
-        p { color: #adadb8; font-size: 0.9rem; margin-bottom: 2rem; }
-        
         textarea {
             width: 100%;
             padding: 15px;
@@ -43,65 +40,39 @@
             border: 2px solid #3a3a3d;
             background: #0e0e10;
             color: white;
-            resize: none;
             box-sizing: border-box;
             margin-bottom: 1.2rem;
             font-size: 1rem;
         }
-        textarea:focus { border-color: var(--twitch-purple); outline: none; }
-
         button {
             background-color: var(--twitch-purple);
             color: white;
             border: none;
-            padding: 14px 20px;
+            padding: 14px;
             border-radius: 6px;
             font-weight: bold;
             cursor: pointer;
             width: 100%;
-            transition: all 0.2s ease;
+            transition: 0.2s;
         }
-        button:hover { background-color: #772ce8; transform: translateY(-2px); }
-
-        #loader { 
-            display: none; 
-            margin-top: 15px; 
-            font-size: 0.85rem;
-            color: #adadb8; 
-            animation: pulse 1.5s infinite;
-        }
-
-        .status-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(0, 255, 0, 0.1);
-            color: #00ff7f;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            margin-top: 1.5rem;
-        }
-        .dot { height: 8px; width: 8px; background-color: #00ff7f; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px #00ff7f; }
-
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        button:hover { background-color: #772ce8; }
+        #loader { display: none; margin-top: 15px; color: #adadb8; font-size: 0.9rem; }
+        .status-tag { margin-top: 1.5rem; color: #00ff7f; font-size: 0.75rem; font-weight: 600; }
     </style>
 </head>
-<body>
+<body onclick="document.getElementById('player').play().catch(() => {})">
 
-    <div class="container" onclick="document.getElementById('player').play().catch(e => {})">
+    <div class="container">
         <h1>CreatorForge <span class="accent">AI</span></h1>
-        <p>Dashboard de Voz de Alonso (Cloud)</p>
+        <p style="color:#adadb8; margin-bottom: 1.5rem;">Panel de Voz (Beta)</p>
         
-        <textarea id="textoInput" rows="3" placeholder="Escribe el mensaje para el chat..."></textarea>
+        <textarea id="textoInput" rows="3" placeholder="Escribe algo para Alonso..."></textarea>
         
         <button onclick="generarVoz()">⚡ ¡Hablar ahora!</button>
         
-        <div id="loader">Conectando con el servidor... 📡</div>
+        <div id="loader">Cargando voz... 📡</div>
         
-        <div class="status-tag">
-            <span class="dot"></span> Backend Online
-        </div>
+        <div class="status-tag">● Backend Online (Oregon)</div>
         
         <audio id="player"></audio>
     </div>
@@ -109,30 +80,32 @@
     <script>
         async function generarVoz() {
             const texto = document.getElementById('textoInput').value;
-            const loader = document.getElementById('loader');
             const player = document.getElementById('player');
+            const loader = document.getElementById('loader');
             
+            // TU URL REAL DE RENDER
             const url_backend = "https://creatorforge-ai-2.onrender.com"; 
             
-            if (!texto.trim()) return alert("Por favor, escribe algo.");
+            if (!texto.trim()) return alert("¡Escribe algo primero!");
 
             loader.style.display = "block";
-            loader.innerText = "Despertando a Alonso en Oregon... 📡";
+            loader.innerText = "Alonso está pensando... 🧠";
 
-            const finalUrl = `${url_backend}/tts?text=${encodeURIComponent(texto)}&voice=es-MX-AlonsoNeural`;
+            // Creamos la URL con un truco de tiempo para evitar caché
+            const finalUrl = `${url_backend}/tts?text=${encodeURIComponent(texto)}&voice=es-MX-AlonsoNeural&t=${Date.now()}`;
             
             player.src = finalUrl;
             
             player.oncanplaythrough = () => {
                 loader.style.display = "none";
-                player.play();
+                player.play().catch(e => {
+                    loader.innerText = "¡Haz clic en la página y pulsa de nuevo! 🖱️";
+                });
             };
 
             player.onerror = () => {
-                loader.innerText = "Sigue durmiendo... reintentando en 5s ✨";
-                setTimeout(() => {
-                    player.load();
-                }, 5000);
+                loader.innerText = "Despertando servidor... espera 10s ✨";
+                setTimeout(() => player.load(), 5000);
             };
         }
     </script>
