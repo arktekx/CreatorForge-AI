@@ -31,17 +31,8 @@
             width: 90%;
             max-width: 420px;
             text-align: center;
-            transition: transform 0.3s ease;
         }
-        .container:hover {
-            border-color: var(--twitch-purple);
-        }
-        h1 { 
-            color: white; 
-            margin-bottom: 0.2rem; 
-            font-size: 1.8rem;
-            letter-spacing: -1px;
-        }
+        h1 { color: white; margin-bottom: 0.2rem; font-size: 1.8rem; letter-spacing: -1px; }
         .accent { color: var(--twitch-purple); }
         p { color: #adadb8; font-size: 0.9rem; margin-bottom: 2rem; }
         
@@ -57,11 +48,7 @@
             margin-bottom: 1.2rem;
             font-size: 1rem;
         }
-        textarea:focus { 
-            border-color: var(--twitch-purple); 
-            outline: none; 
-            background: #18181b;
-        }
+        textarea:focus { border-color: var(--twitch-purple); outline: none; }
 
         button {
             background-color: var(--twitch-purple);
@@ -70,21 +57,19 @@
             padding: 14px 20px;
             border-radius: 6px;
             font-weight: bold;
-            font-size: 1rem;
             cursor: pointer;
             width: 100%;
             transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
         }
-        button:hover { 
-            background-color: #772ce8; 
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(145, 70, 255, 0.4);
+        button:hover { background-color: #772ce8; transform: translateY(-2px); }
+
+        #loader { 
+            display: none; 
+            margin-top: 15px; 
+            font-size: 0.85rem;
+            color: #adadb8; 
+            animation: pulse 1.5s infinite;
         }
-        button:active { transform: translateY(0); }
 
         .status-tag {
             display: inline-flex;
@@ -96,45 +81,23 @@
             border-radius: 20px;
             font-size: 0.75rem;
             margin-top: 1.5rem;
-            font-weight: 600;
         }
-        .dot {
-            height: 8px;
-            width: 8px;
-            background-color: #00ff7f;
-            border-radius: 50%;
-            display: inline-block;
-            box-shadow: 0 0 8px #00ff7f;
-        }
+        .dot { height: 8px; width: 8px; background-color: #00ff7f; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px #00ff7f; }
 
-        #loader { 
-            display: none; 
-            margin-top: 15px; 
-            font-size: 0.85rem;
-            color: #adadb8; 
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 0.5; }
-            50% { opacity: 1; }
-            100% { opacity: 0.5; }
-        }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
     </style>
 </head>
 <body>
 
-    <div class="container">
+    <div class="container" onclick="document.getElementById('player').play().catch(e => {})">
         <h1>CreatorForge <span class="accent">AI</span></h1>
         <p>Dashboard de Voz de Alonso (Cloud)</p>
         
         <textarea id="textoInput" rows="3" placeholder="Escribe el mensaje para el chat..."></textarea>
         
-        <button onclick="generarVoz()">
-            <span>⚡</span> ¡Hablar ahora!
-        </button>
+        <button onclick="generarVoz()">⚡ ¡Hablar ahora!</button>
         
-        <div id="loader">Enviando datos a Oregon... 📡</div>
+        <div id="loader">Conectando con el servidor... 📡</div>
         
         <div class="status-tag">
             <span class="dot"></span> Backend Online
@@ -149,41 +112,28 @@
             const loader = document.getElementById('loader');
             const player = document.getElementById('player');
             
-            // TU URL CONFIGURADA
             const url_backend = "https://creatorforge-ai-2.onrender.com"; 
             
-            if (!texto.trim()) {
-                alert("Por favor, escribe algo para Alonso.");
-                return;
-            }
+            if (!texto.trim()) return alert("Por favor, escribe algo.");
 
             loader.style.display = "block";
+            loader.innerText = "Despertando a Alonso en Oregon... 📡";
 
-            try {
-                // Generamos la URL del audio
-                const finalUrl = `${url_backend}/tts?text=${encodeURIComponent(texto)}&voice=es-MX-AlonsoNeural`;
-                
-                player.src = finalUrl;
-                
-                // Intentar reproducir
-                player.play().catch(e => {
-                    console.error("Error al reproducir:", e);
-                    alert("Haz clic en la página primero para permitir el audio.");
-                });
-                
-                player.onplaying = () => {
-                    loader.style.display = "none";
-                };
-
-                player.onerror = () => {
-                    loader.style.display = "none";
-                    alert("Error: El servidor está despertando, intenta de nuevo en 20 segundos.");
-                };
-
-            } catch (error) {
-                console.error(error);
+            const finalUrl = `${url_backend}/tts?text=${encodeURIComponent(texto)}&voice=es-MX-AlonsoNeural`;
+            
+            player.src = finalUrl;
+            
+            player.oncanplaythrough = () => {
                 loader.style.display = "none";
-            }
+                player.play();
+            };
+
+            player.onerror = () => {
+                loader.innerText = "Sigue durmiendo... reintentando en 5s ✨";
+                setTimeout(() => {
+                    player.load();
+                }, 5000);
+            };
         }
     </script>
 
