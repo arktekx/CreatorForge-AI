@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CreatorForge AI | Dashboard</title>
+    <style>
+        :root {
+            --twitch-purple: #9146ff;
+            --twitch-dark: #0e0e10;
+            --twitch-card: #1f1f23;
+            --twitch-text: #efeff1;
+        }
+        body {
+            background-color: var(--twitch-dark);
+            color: var(--twitch-text);
+            font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: var(--twitch-card);
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+            border: 1px solid rgba(145, 70, 255, 0.3);
+            width: 90%;
+            max-width: 420px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        .container:hover {
+            border-color: var(--twitch-purple);
+        }
+        h1 { 
+            color: white; 
+            margin-bottom: 0.2rem; 
+            font-size: 1.8rem;
+            letter-spacing: -1px;
+        }
+        .accent { color: var(--twitch-purple); }
+        p { color: #adadb8; font-size: 0.9rem; margin-bottom: 2rem; }
+        
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #3a3a3d;
+            background: #0e0e10;
+            color: white;
+            resize: none;
+            box-sizing: border-box;
+            margin-bottom: 1.2rem;
+            font-size: 1rem;
+        }
+        textarea:focus { 
+            border-color: var(--twitch-purple); 
+            outline: none; 
+            background: #18181b;
+        }
+
+        button {
+            background-color: var(--twitch-purple);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        button:hover { 
+            background-color: #772ce8; 
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(145, 70, 255, 0.4);
+        }
+        button:active { transform: translateY(0); }
+
+        .status-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 255, 0, 0.1);
+            color: #00ff7f;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            margin-top: 1.5rem;
+            font-weight: 600;
+        }
+        .dot {
+            height: 8px;
+            width: 8px;
+            background-color: #00ff7f;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px #00ff7f;
+        }
+
+        #loader { 
+            display: none; 
+            margin-top: 15px; 
+            font-size: 0.85rem;
+            color: #adadb8; 
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>CreatorForge <span class="accent">AI</span></h1>
+        <p>Dashboard de Voz de Alonso (Cloud)</p>
+        
+        <textarea id="textoInput" rows="3" placeholder="Escribe el mensaje para el chat..."></textarea>
+        
+        <button onclick="generarVoz()">
+            <span>⚡</span> ¡Hablar ahora!
+        </button>
+        
+        <div id="loader">Enviando datos a Oregon... 📡</div>
+        
+        <div class="status-tag">
+            <span class="dot"></span> Backend Online
+        </div>
+        
+        <audio id="player"></audio>
+    </div>
+
+    <script>
+        async function generarVoz() {
+            const texto = document.getElementById('textoInput').value;
+            const loader = document.getElementById('loader');
+            const player = document.getElementById('player');
+            
+            // TU URL CONFIGURADA
+            const url_backend = "https://creatorforge-ai-2.onrender.com"; 
+            
+            if (!texto.trim()) {
+                alert("Por favor, escribe algo para Alonso.");
+                return;
+            }
+
+            loader.style.display = "block";
+
+            try {
+                // Generamos la URL del audio
+                const finalUrl = `${url_backend}/tts?text=${encodeURIComponent(texto)}&voice=es-MX-AlonsoNeural`;
+                
+                player.src = finalUrl;
+                
+                // Intentar reproducir
+                player.play().catch(e => {
+                    console.error("Error al reproducir:", e);
+                    alert("Haz clic en la página primero para permitir el audio.");
+                });
+                
+                player.onplaying = () => {
+                    loader.style.display = "none";
+                };
+
+                player.onerror = () => {
+                    loader.style.display = "none";
+                    alert("Error: El servidor está despertando, intenta de nuevo en 20 segundos.");
+                };
+
+            } catch (error) {
+                console.error(error);
+                loader.style.display = "none";
+            }
+        }
+    </script>
+
+</body>
+</html>
